@@ -24,4 +24,10 @@ Notes & best practices:
 - Keep hooks simple and fast; for long-running tasks consider running them in their own workflow.
 - The pipeline preserves backward compatibility with legacy single hooks like `fmt.sh` and `clippy.sh`.
 
+PR / Release behavior:
+- The main CI pipeline now runs only when a PR review with state **approved** is submitted. This keeps costly pipeline runs limited to reviewed changes.
+- Merging into `main` / `master` will **not** trigger the CI pipeline automatically.
+- Create a tag starting with `v` (e.g. `v1.2.0`) and push it; tag pushes trigger the full pipeline and an automated Release workflow which builds, tests, and creates a GitHub Release.
+- If you need manual runs, use the workflow dispatch to trigger the CI pipeline by hand.
+
 See `.github/custom/README.md` for more examples and security notes.
