@@ -1,0 +1,11 @@
+{
+  "name": "Rust Dev",
+  "image": "mcr.microsoft.com/devcontainers/rust:1",
+  "features": {},
+  "postCreateCommand": "rustup component add clippy rustfmt || true && cargo test",
+  "customizations": {
+    "vscode": {
+      "extensions": ["rust-lang.rust-analyzer", "serayuzgur.crates"]
+    }
+  }
+}

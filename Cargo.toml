@@ -1,0 +1,14 @@
+[package]
+name = "rust-repo-template"
+version = "0.1.0"
+edition = "2021"
+description = "A Rust project template designed for fast starts and AI collaboration"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/<your-org>/<repo>"
+readme = "README.md"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+
+[dev-dependencies]
+pretty_assertions = "1.3"
