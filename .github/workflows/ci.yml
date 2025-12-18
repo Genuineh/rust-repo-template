@@ -28,70 +28,13 @@ jobs:
           export PATH="$HOME/.local/bin:$PATH"
           pre-commit run --all-files
 
-  fmt:
-    if: ${{ (github.event_name == 'pull_request_review' && github.event.review.state == 'approved' && github.event.pull_request != null && !github.event.pull_request.draft) || startsWith(github.ref, 'refs/tags/v') }}
-    needs: pre-commit
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-      - name: Run before-fmt hook if present
-        run: |
-          if [ -f .github/custom/before-fmt.sh ]; then
-            chmod +x .github/custom/before-fmt.sh
-            .github/custom/before-fmt.sh
-          else
-            echo "No before-fmt hook found, skipping"
-          fi
-      - name: Run rustfmt check
-        run: cargo fmt --all -- --check
-      - name: Run after-fmt hook if present
-        run: |
-          if [ -f .github/custom/after-fmt.sh ]; then
-            chmod +x .github/custom/after-fmt.sh
-            .github/custom/after-fmt.sh
-          else
-            echo "No after-fmt hook found, skipping"
-          fi
 
-  clippy:
-    if: ${{ (github.event_name == 'pull_request_review' && github.event.review.state == 'approved' && github.event.pull_request != null && !github.event.pull_request.draft) || startsWith(github.ref, 'refs/tags/v') }}
-    runs-on: ubuntu-latest
-    needs: fmt
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-      - name: Run before-clippy hook if present
-        run: |
-          if [ -f .github/custom/before-clippy.sh ]; then
-            chmod +x .github/custom/before-clippy.sh
-            .github/custom/before-clippy.sh
-          else
-            echo "No before-clippy hook found, skipping"
-          fi
-      - name: Run clippy
-        run: cargo clippy --all-targets --all-features -- -D warnings
-      - name: Run after-clippy hook if present
-        run: |
-          if [ -f .github/custom/after-clippy.sh ]; then
-            chmod +x .github/custom/after-clippy.sh
-            .github/custom/after-clippy.sh
-          else
-            echo "No after-clippy hook found, skipping"
-          fi
+
 
   build:
     if: ${{ (github.event_name == 'pull_request_review' && github.event.review.state == 'approved' && github.event.pull_request != null && !github.event.pull_request.draft) || startsWith(github.ref, 'refs/tags/v') }}
     runs-on: ubuntu-latest
-    needs: clippy
+    needs: pre-commit
     strategy:
       matrix:
         toolchain: [stable, beta]

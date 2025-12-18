@@ -2,12 +2,13 @@
 
 This template provides a fixed pipeline with the following *stages*:
 
-- fmt (rustfmt check)
-- clippy (linting)
+- pre-commit (quick gate: `rustfmt` + `clippy`)
 - build (release build)
 - test (unit/integration tests)
 - security (cargo-audit)
 - docs (cargo doc)
+
+Note: there are no separate `fmt`/`clippy` jobs; `pre-commit` acts as a fast filter so heavier jobs (`build`/`test` etc.) run only after quick-gate checks pass.
 
 For each stage, the CI supports optional local hooks you can add under `.github/custom/` using this naming convention:
 
