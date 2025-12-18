@@ -287,6 +287,46 @@ fn main() -> Result<()> {
                 std::process::exit(2);
             }
 
+            // If there is a folder templates/<name>/, use it as a template source
+            let template_dir = repo_root.join("templates").join(&template);
+            if template_dir.exists() && template_dir.is_dir() {
+                // collect files inside template_dir
+                let mut src_files = Vec::new();
+                for entry in walkdir::WalkDir::new(&template_dir).into_iter().filter_map(|e| e.ok()) {
+                    let p = entry.path().to_path_buf();
+                    if p.is_file() {
+                        // compute relative path inside template
+                        let rel = p.strip_prefix(&template_dir).unwrap().to_path_buf();
+                        src_files.push((p, rel));
+                    }
+                }
+                if src_files.is_empty() {
+                    println!("Template '{}' has no files", template);
+                    return Ok(());
+                }
+                println!("Template '{}' matched {} files:", template, src_files.len());
+                for (_, rel) in &src_files {
+                    println!(" - {}", rel.display());
+                }
+
+                if apply {
+                    let dest = out_dir.clone();
+                    for (src, rel) in &src_files {
+                        let destpath = dest.join(rel);
+                        if let Some(parent) = destpath.parent() {
+                            fs::create_dir_all(parent)?;
+                        }
+                        fs::copy(src, &destpath).with_context(|| format!("copy {:?} to {:?}", src, destpath))?;
+                    }
+                    println!("Template files written to {}", dest.display());
+                } else {
+                    println!("Dry run (no files written). Use --apply to write files.");
+                }
+
+                return Ok(());
+            }
+
+            // fallback to pattern-based copy using manifest/categories
             let matches = expand_patterns(&repo_root, &pats)?;
             if matches.is_empty() {
                 println!("No files matched for category '{}', patterns: {:?}", category, pats);
@@ -370,8 +410,21 @@ fn main() -> Result<()> {
                     }
                 }
                 "llm" => {
-                    println!("LLM evaluation requested but not enabled in this build. Configure provider to enable.");
-                    std::process::exit(3);
+                    #[cfg(feature = "llm")]
+                    {
+                        match crate::llm::evaluate_with_llm(&repo_root) {
+                            Ok(()) => println!("LLM evaluation completed (provider stub)"),
+                            Err(e) => {
+                                eprintln!("LLM evaluation error: {}", e);
+                                std::process::exit(3);
+                            }
+                        }
+                    }
+                    #[cfg(not(feature = "llm"))]
+                    {
+                        eprintln!("LLM evaluation requested but not enabled in this build. Build with '--features llm' to enable.");
+                        std::process::exit(3);
+                    }
                 }
                 other => {
                     eprintln!("Unknown ai-eval mode: {}", other);

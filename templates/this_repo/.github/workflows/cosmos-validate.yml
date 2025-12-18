@@ -1,0 +1,11 @@
+name: Cosmos validate (template)
+
+on: [push]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Quick check
+        run: echo "template workflow"

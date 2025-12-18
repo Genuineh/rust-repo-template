@@ -1,0 +1,11 @@
+[meta]
+owner = "maintainers"
+created = "2025-12-18T12:00:00Z"
+
+[[task]]
+id = "0001"
+title = "Template init"
+status = "open"
+assignee = "maintainer"
+labels = ["template"]
+task_file = "tasks/0001-template.md"
