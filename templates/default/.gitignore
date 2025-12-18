@@ -1,13 +1,25 @@
 # Rust
 /target/
+debug
+**/mutants.out*/
 **/*.rs.bk
 **/*.rlib
+**/*.rmeta
+**/*.dSYM
+*.pdb
 Cargo.lock
+
+# Cargo and build
+.cargo/
+.fingerprint/
 
 # Editor
 .vscode/
 .idea/
 .DS_Store
+
+# Devcontainer
+.devcontainer/
 
 # Temporary
 /out/
