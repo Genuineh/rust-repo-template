@@ -525,7 +525,7 @@ fn main() -> Result<()> {
                 "llm" => {
                     #[cfg(feature = "llm")]
                     {
-                        match crate::llm::evaluate_with_llm(&repo_root) {
+                        match rust_repo_template::llm::evaluate_with_llm(&repo_root) {
                             Ok(()) => println!("LLM evaluation completed (provider stub)"),
                             Err(e) => {
                                 eprintln!("LLM evaluation error: {}", e);

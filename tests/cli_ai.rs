@@ -12,6 +12,6 @@ fn ai_eval_rule_ok() -> Result<(), Box<dyn std::error::Error>> {
 fn ai_eval_llm_unavailable() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = assert_cmd::cargo::cargo_bin_cmd!("cosmos");
     cmd.arg("ai-eval").arg("--mode").arg("llm");
-    cmd.assert().failure().stderr(predicate::str::contains("not enabled"));
+    cmd.assert().failure().stderr(predicate::str::contains("no LLM provider configured"));
     Ok(())
 }

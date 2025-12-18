@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 
 /// LLM plugin interface.
 ///
@@ -8,7 +8,7 @@ use anyhow::Result;
 
 /// Evaluate repository artifacts with an LLM provider. Returns Ok(()) when the
 /// evaluation completes (placeholder), or an error when not available or on errors.
-pub fn evaluate_with_llm(_repo_root: &std::path::Path) -> Result<()> {
+pub fn evaluate_with_llm(repo_root: &std::path::Path) -> Result<()> {
     // If the llm feature is enabled, implementation will go here.
     // For now, provide a clear error when the feature is not enabled.
     #[cfg(not(feature = "llm"))]
