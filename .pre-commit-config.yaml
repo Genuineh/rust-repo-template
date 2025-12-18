@@ -8,6 +8,12 @@ repos:
         files: "\\.rs$"
       - id: rust-clippy
         name: clippy
-        entry: bash -lc "cargo clippy --all-targets --all-features -- -D warnings"
+        entry: bash -lc "\
+          ALLOW_LIST=$(grep -Po '(?<=allow\s*=\s*\[).*(?=\])' clippy.toml || true) && \
+          ALLOW_FLAGS=\"\" && \
+          for a in $(echo \"$ALLOW_LIST\" | sed 's/,/ /g' | tr -d '"') ; do \
+            if [ -n \"$a\" ]; then ALLOW_FLAGS=\"$ALLOW_FLAGS -A $a\" ; fi ; \
+          done && \
+          cargo clippy --all-targets --all-features -- -D warnings $ALLOW_FLAGS"
         language: system
         files: "\\.rs$"

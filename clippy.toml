@@ -1,0 +1,12 @@
+# clippy configuration
+# - msrv: minimum supported Rust version (used by some lints)
+# - lints.allow: list of clippy lint names to allow (will be passed as -A flags when running clippy)
+
+msrv = "1.70.0"
+
+[lints]
+# Example: allow these lints project-wide (adjust to your preferences)
+allow = [
+  "clippy::module_name_repetitions",
+  "clippy::needless_pass_by_value"
+]

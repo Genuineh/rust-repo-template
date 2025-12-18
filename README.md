@@ -39,6 +39,7 @@ cargo test
   - `cargo fmt --all`  
   - `cargo clippy --all-targets --all-features -- -D warnings`
 - 代码风格配置：仓库根目录包含 `rustfmt.toml` 与 `.editorconfig`，请在提交前使用 `cargo fmt` 格式化并遵循这些设置。
+- Clippy 配置：仓库根目录包含 `clippy.toml`，用于定义 `msrv` 与全局允许的 lint 列表（CI 与 pre-commit 会读取它并将允许项以 `-A` 形式传递给 `cargo clippy`）。
 - 推荐：在 VS Code 中启用 `Format on Save`（`.vscode/settings.json` 已包含示例设置）。
 - 编写单元测试，并保持测试快速且确定性
 
