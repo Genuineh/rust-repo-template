@@ -39,6 +39,9 @@ enum Commands {
         /// Additional template variables in key=value form; may be repeated
         #[arg(long = "var", value_parser = parse_key_val, num_args=0..)]
         vars: Vec<(String, String)>,
+        /// After generation, run verification steps (fmt/clippy/test)
+        #[arg(long)]
+        verify: bool,
     },
 
     /// Validate repository / template
@@ -70,6 +73,7 @@ enum PlanCmd {
     Validate { task: Option<String> },
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Deserialize)]
 struct TemplateManifest {
     name: Option<String>,
@@ -125,7 +129,7 @@ fn copy_paths_to(repo_root: &Path, paths: &[PathBuf], dest: &Path) -> Result<()>
     Ok(())
 }
 
-fn validate_repo(repo_root: &Path, level: &str) -> Result<(Vec<String>, Vec<String>)> {
+fn validate_repo(repo_root: &Path, _level: &str) -> Result<(Vec<String>, Vec<String>)> {
     let mut errors = Vec::new();
     let mut warnings = Vec::new();
 
@@ -183,6 +187,7 @@ fn validate_repo(repo_root: &Path, level: &str) -> Result<(Vec<String>, Vec<Stri
     Ok((errors, warnings))
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Deserialize)]
 struct PlanTodo {
     meta: Option<toml::Value>,
@@ -190,6 +195,7 @@ struct PlanTodo {
     task: Vec<PlanTask>,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Deserialize)]
 struct PlanTask {
     id: String,
@@ -243,6 +249,8 @@ fn validate_plan(repo_root: &Path) -> Result<Vec<String>> {
     Ok(issues)
 }
 
+use std::process::Command;
+
 fn check_ai_heuristics(repo_root: &Path) -> Result<Vec<String>> {
     let mut warnings = Vec::new();
     if !repo_root.join(".github/copilot-instructions.md").exists() && !repo_root.join(".github/ai").exists() {
@@ -253,6 +261,37 @@ fn check_ai_heuristics(repo_root: &Path) -> Result<Vec<String>> {
         warnings.push("README doesn't mention AI collaboration guidance".to_string());
     }
     Ok(warnings)
+}
+
+fn run_cmd_in_dir(cmd: &str, args: &[&str], dir: &Path) -> Result<(bool, String)> {
+    let output = Command::new(cmd).args(args).current_dir(dir).output().context("running command")?;
+    let success = output.status.success();
+    let mut out = String::new();
+    out.push_str(&String::from_utf8_lossy(&output.stdout));
+    out.push_str(&String::from_utf8_lossy(&output.stderr));
+    Ok((success, out))
+}
+
+fn run_verification(dest: &Path) -> Result<bool> {
+    let mut all_ok = true;
+    println!("Verification summary:");
+
+    // 1) cargo fmt --all -- --check
+    let (ok, out) = run_cmd_in_dir("cargo", &["fmt", "--all", "--", "--check"], dest)?;
+    println!(" - cargo fmt: {}", if ok { "OK" } else { "FAILED" });
+    if !ok { println!("   {}",&out); all_ok = false; }
+
+    // 2) cargo clippy --all-targets --all-features -- -D warnings
+    let (ok, out) = run_cmd_in_dir("cargo", &["clippy", "--all-targets", "--all-features", "--", "-D", "warnings"], dest)?;
+    println!(" - cargo clippy: {}", if ok { "OK" } else { "FAILED" });
+    if !ok { println!("   {}",&out); all_ok = false; }
+
+    // 3) cargo test --all --quiet
+    let (ok, out) = run_cmd_in_dir("cargo", &["test", "--all", "--quiet"], dest)?;
+    println!(" - cargo test: {}", if ok { "OK" } else { "FAILED" });
+    if !ok { println!("   {}",&out); all_ok = false; }
+
+    Ok(all_ok)
 }
 
 fn parse_key_val(s: &str) -> Result<(String, String), String> {
@@ -269,7 +308,7 @@ fn main() -> Result<()> {
     let repo_root = std::env::current_dir().context("current dir")?;
 
     match cli.command {
-        Commands::Generate { category, out_dir, apply, template, project_name, vars } => {
+        Commands::Generate { category, out_dir, apply, template, project_name, vars, verify } => {
             let manifest = load_manifest(&repo_root, &template)?;
             let categories = if let Some(m) = manifest {
                 m.categories
@@ -349,14 +388,24 @@ fn main() -> Result<()> {
                         }
 
                         // Try to render file contents as UTF-8 text templates; fallback to binary copy
-                        match fs::read_to_string(&src) {
+                        // Skip rendering for GitHub workflows and files that contain GitHub expressions or templating markers
+                        let src_s = src.to_string_lossy().to_string();
+                        let raw = fs::read_to_string(&src);
+                        let should_skip = src_s.contains(".github/workflows/") || raw.as_ref().map(|s| s.contains("${{") ).unwrap_or(false);
+
+                        match raw {
                             Ok(content) => {
-                                match hb.render_template(&content, &hb_ctx) {
-                                    Ok(rendered) => fs::write(&destpath, rendered)?,
-                                    Err(e) => {
-                                        // if rendering fails, copy raw
-                                        eprintln!("warning: template render failed for {:?}: {}. copying raw.", src, e);
-                                        fs::copy(src, &destpath)?;
+                                if should_skip {
+                                    // write raw content to destination to avoid handlebars parsing errors
+                                    fs::write(&destpath, content)?;
+                                } else {
+                                    match hb.render_template(&content, &hb_ctx) {
+                                        Ok(rendered) => fs::write(&destpath, rendered)?,
+                                        Err(e) => {
+                                            // if rendering fails, copy raw and warn
+                                            eprintln!("warning: template render failed for {:?}: {}. copying raw.", src, e);
+                                            fs::copy(src, &destpath)?;
+                                        }
                                     }
                                 }
                             }
@@ -365,7 +414,24 @@ fn main() -> Result<()> {
                             }
                         }
                     }
+
                     println!("Template files written to {}", dest.display());
+
+                    // Optional verification step: run fmt/clippy/test in the generated project
+                    if verify {
+                        println!("Running verification checks (fmt/clippy/test) in {}", dest.display());
+                        match run_verification(&dest) {
+                            Ok(true) => println!("Verification checks passed"),
+                            Ok(false) => {
+                                eprintln!("Verification checks failed");
+                                std::process::exit(4);
+                            }
+                            Err(e) => {
+                                eprintln!("Verification error: {}", e);
+                                std::process::exit(5);
+                            }
+                        }
+                    }
                 } else {
                     println!("Dry run (no files written). Use --apply to write files.");
                 }
@@ -426,7 +492,7 @@ fn main() -> Result<()> {
                     }
                 }
             }
-            PlanCmd::Validate { task } => {
+            PlanCmd::Validate { task: _ } => {
                 println!("Running plan validation...");
                 let issues = validate_plan(&repo_root)?;
                 if issues.is_empty() {

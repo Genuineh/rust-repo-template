@@ -18,9 +18,16 @@ pub fn evaluate_with_llm(_repo_root: &std::path::Path) -> Result<()> {
 
     #[cfg(feature = "llm")]
     {
-        // Placeholder: real implementation should call configured provider, pass
-        // evaluation prompts, gather evidence and return structured results.
-        // We keep this intentionally minimal for the initial scaffold.
-        Ok(())
+        // Basic provider stub: look for LLM_PROVIDER env var
+        match std::env::var("LLM_PROVIDER") {
+            Ok(p) if p.to_lowercase() == "stub" => {
+                // write a simple report file to repo_root to indicate action
+                let report = repo_root.join(".cosmos_llm_report.txt");
+                std::fs::write(report, "LLM provider stub ran successfully\n").context("writing llm report")?;
+                Ok(())
+            }
+            Ok(other) => anyhow::bail!("unsupported LLM_PROVIDER '{}', set to 'stub' for testing", other),
+            Err(_) => anyhow::bail!("no LLM provider configured: set LLM_PROVIDER=stub for the stub provider"),
+        }
     }
 }
