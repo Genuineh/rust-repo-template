@@ -1,0 +1,27 @@
+name: PR Lint
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  ai-disclosure-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR body for AI disclosure
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const body = context.payload.pull_request && context.payload.pull_request.body || '';
+            const hasDisclosure = /AI usage disclosure|AI 使用披露|AI usage|AI-assisted|使用 AI/i.test(body);
+            if (!hasDisclosure) {
+              const msg = '⚠️ It looks like this PR does not contain an AI usage disclosure. If any code was generated or assisted by AI, please include the prompt and a short evaluation in the PR description.';
+              await github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: context.payload.pull_request.number,
+                body: msg
+              });
+            } else {
+              console.log('AI disclosure found (or not applicable).');
+            }
