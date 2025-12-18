@@ -58,7 +58,7 @@ cargo test
 
 ## 宇宙工具：cosmos (示例生成与校验) 🔭
 
-本仓库同时作为 `cosmos` CLI 的示例模板。`cosmos` 可以生成、校验并管理项目结构与 `plan/` 流程。本仓库的模板说明位于 `templates/this_repo.toml`。
+本仓库同时作为 `cosmos` CLI 的示例模板。`cosmos` 可以生成、校验并管理项目结构与 `plan/` 流程。本仓库的模板说明位于 `templates/default.toml`。
 
 安装（本地 / 开发者）:
 
@@ -73,10 +73,10 @@ cargo install --path . --bin cosmos
 示例用法（**默认 dry-run**）：
 ```bash
 # 列出将要生成的文件（不写盘）
-cargo run -p rust-repo-template --bin cosmos -- generate --template this_repo --category all
+cargo run -p rust-repo-template --bin cosmos -- generate --template default --category all
 
 # 写入本地目录 ./out
-cargo run -p rust-repo-template --bin cosmos -- generate --template this_repo --category all --apply --out-dir ./out
+cargo run -p rust-repo-template --bin cosmos -- generate --template default --category all --apply --out-dir ./out
 
 # 进行快速校验
 cargo run -p rust-repo-template --bin cosmos -- validate --level quick

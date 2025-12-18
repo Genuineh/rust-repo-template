@@ -12,6 +12,10 @@ pub fn add(a: i32, b: i32) -> i32 {
     a + b
 }
 
+// Expose feature-gated modules for binaries/tests
+#[cfg(any(test, feature = "llm"))]
+pub mod llm;
+
 #[cfg(test)]
 mod tests {
     use super::*;

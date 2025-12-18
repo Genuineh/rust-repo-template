@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 - `validate` command with structural, CI/workflow, plan checks and non-LLM AI heuristics. 🔍
 - `plan` subcommands: `list` and `validate` to manage `plan/` lifecycle and detect inconsistencies. 🗂️
 - `ai-eval` command with rule-based checks and scaffolded LLM plugin behind feature flag `llm`. 🤖
-- Template manifest added: `templates/this_repo.toml`. 📦
+- Template manifest added: `templates/default.toml`. 📦
 - Tests for CLI subcommands and examples under `tests/cli_*.rs`. ✅
 - Docs: `docs/cosmos.md` with usage and docs integration. 📚
 - CI: `c/` workflow `cosmos-validate.yml` to run `cargo test` and quick `cosmos validate`. 🔁

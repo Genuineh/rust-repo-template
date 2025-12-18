@@ -14,13 +14,13 @@
 列出将要生成/复制的文件（不写盘）:
 
 ```bash
-cargo run -p rust-repo-template --bin cosmos -- generate --template this_repo --category all
+cargo run -p rust-repo-template --bin cosmos -- generate --template default --category all
 ```
 
 写入本地目录（例如 `./out`）:
 
 ```bash
-cargo run -p rust-repo-template --bin cosmos -- generate --template this_repo --category all --apply --out-dir ./out
+cargo run -p rust-repo-template --bin cosmos -- generate --template default --category all --apply --out-dir ./out
 ```
 
 可选 category：`all`, `basis`, `docs`, `ci`, `tests`, `examples`, `scripts`, `plan`
@@ -71,13 +71,22 @@ cargo run -p rust-repo-template --bin cosmos -- plan validate
 cargo run -p rust-repo-template --bin cosmos -- ai-eval --mode rule
 ```
 
-LLM 驱动评估（需要配置外部 provider，尚未启用）:
+LLM 驱动评估（需要配置外部 provider，特性可选）:
 
+默认（未启用）情况：
 ```bash
 cargo run -p rust-repo-template --bin cosmos -- ai-eval --mode llm
 ```
+会以明确错误退出，提示启用特性和配置提供者。
 
-当 LLM 模式被请求但未配置时，命令会以明确错误退出；后续将添加插件接口以安全配置 provider（feature-gated）。
+要启用 LLM 功能并运行评估（实验性）：
+
+```bash
+# 编译并启用 llm feature（provider 尚需实现/配置）
+cargo run -p rust-repo-template --bin cosmos --features llm -- ai-eval --mode llm
+```
+
+实现说明：`llm` 的接口被 scaffold 在 `src/llm.rs`，返回典型的错误或结果；未来可以实现具体 provider（如 OpenAI、Anthropic 等）并通过安全的配置（环境变量或 CI secrets）注入。
 
 ## 配置
 
@@ -95,7 +104,7 @@ cargo run -p rust-repo-template --bin cosmos -- ai-eval --mode llm
 ## 开发者说明
 
 - 源码入口：`src/bin/cosmos.rs`。
-- 模板示例放在：`templates/this_repo.toml`。
+- 模板示例放在：`templates/default.toml`。
 - 测试：`cargo test` 包含 CLI 集成测试（`tests/cli_*.rs`）。
 
 ---

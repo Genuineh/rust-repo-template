@@ -30,9 +30,15 @@ enum Commands {
         /// Actually write files to disk (default: dry-run)
         #[arg(long)]
         apply: bool,
-        /// Template name (default: this_repo)
-        #[arg(long, default_value = "this_repo")]
+        /// Template name (default: default)
+        #[arg(long, default_value = "default")]
         template: String,
+        /// Project name to use for templating (used for {{project-name}})
+        #[arg(long)]
+        project_name: Option<String>,
+        /// Additional template variables in key=value form; may be repeated
+        #[arg(long = "var", value_parser = parse_key_val, num_args=0..)]
+        vars: Vec<(String, String)>,
     },
 
     /// Validate repository / template
@@ -249,13 +255,21 @@ fn check_ai_heuristics(repo_root: &Path) -> Result<Vec<String>> {
     Ok(warnings)
 }
 
+fn parse_key_val(s: &str) -> Result<(String, String), String> {
+    let mut parts = s.splitn(2, '=');
+    match (parts.next(), parts.next()) {
+        (Some(k), Some(v)) => Ok((k.to_string(), v.to_string())),
+        _ => Err(format!("invalid key=value: '{}'", s)),
+    }
+}
+
 fn main() -> Result<()> {
     let cli = Cli::parse();
     // Assume repo root is current dir
     let repo_root = std::env::current_dir().context("current dir")?;
 
     match cli.command {
-        Commands::Generate { category, out_dir, apply, template } => {
+        Commands::Generate { category, out_dir, apply, template, project_name, vars } => {
             let manifest = load_manifest(&repo_root, &template)?;
             let categories = if let Some(m) = manifest {
                 m.categories
@@ -304,6 +318,17 @@ fn main() -> Result<()> {
                     println!("Template '{}' has no files", template);
                     return Ok(());
                 }
+
+                // Build template context
+                let mut hb_ctx = serde_json::Map::new();
+                if let Some(n) = project_name {
+                    hb_ctx.insert("project-name".to_string(), serde_json::Value::String(n));
+                }
+                for (k, v) in vars {
+                    hb_ctx.insert(k, serde_json::Value::String(v));
+                }
+                let hb = handlebars::Handlebars::new();
+
                 println!("Template '{}' matched {} files:", template, src_files.len());
                 for (_, rel) in &src_files {
                     println!(" - {}", rel.display());
@@ -312,11 +337,33 @@ fn main() -> Result<()> {
                 if apply {
                     let dest = out_dir.clone();
                     for (src, rel) in &src_files {
-                        let destpath = dest.join(rel);
+                        // render destination path
+                        let rel_str = rel.to_string_lossy().to_string();
+                        let dest_rel = match hb.render_template(&rel_str, &hb_ctx) {
+                            Ok(s) => PathBuf::from(s),
+                            Err(_) => rel.clone(),
+                        };
+                        let destpath = dest.join(dest_rel);
                         if let Some(parent) = destpath.parent() {
                             fs::create_dir_all(parent)?;
                         }
-                        fs::copy(src, &destpath).with_context(|| format!("copy {:?} to {:?}", src, destpath))?;
+
+                        // Try to render file contents as UTF-8 text templates; fallback to binary copy
+                        match fs::read_to_string(&src) {
+                            Ok(content) => {
+                                match hb.render_template(&content, &hb_ctx) {
+                                    Ok(rendered) => fs::write(&destpath, rendered)?,
+                                    Err(e) => {
+                                        // if rendering fails, copy raw
+                                        eprintln!("warning: template render failed for {:?}: {}. copying raw.", src, e);
+                                        fs::copy(src, &destpath)?;
+                                    }
+                                }
+                            }
+                            Err(_) => {
+                                fs::copy(src, &destpath)?;
+                            }
+                        }
                     }
                     println!("Template files written to {}", dest.display());
                 } else {

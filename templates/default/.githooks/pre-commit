@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+# Simple pre-commit hook example (template)
+# Run basic checks before commit
+cargo fmt --all -- --check || exit 1
+cargo test --workspace --quiet || exit 1

@@ -13,6 +13,6 @@ fn ai_eval_rule_ok() -> Result<(), Box<dyn std::error::Error>> {
 fn ai_eval_llm_unavailable() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = Command::cargo_bin("cosmos")?;
     cmd.arg("ai-eval").arg("--mode").arg("llm");
-    cmd.assert().failure().stdout(predicate::str::contains("not enabled"));
+    cmd.assert().failure().stderr(predicate::str::contains("not enabled"));
     Ok(())
 }

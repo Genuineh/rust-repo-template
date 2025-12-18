@@ -11,6 +11,9 @@
 ```bash
 git clone <your-new-repo>
 cd <your-new-repo>
+# optional: install git hooks to auto-run format + clippy on commit
+./scripts/install-git-hooks.sh
+
 cargo build
 cargo test
 ```
