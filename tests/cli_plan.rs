@@ -35,11 +35,11 @@ task_file = "tasks/0002.md"
     fs::write(td.path().join("plan/archive/0001.md"), "done")?;
     fs::write(td.path().join("plan/tasks/0002.md"), "open")?;
 
-    let mut cmd = Command::cargo_bin("cosmos")?;
+    let mut cmd = assert_cmd::cargo::cargo_bin_cmd!("cosmos");
     cmd.current_dir(td.path()).arg("plan").arg("list");
     cmd.assert().success().stdout(predicate::str::contains("Tasks (2)"));
 
-    let mut cmd = Command::cargo_bin("cosmos")?;
+    let mut cmd = assert_cmd::cargo::cargo_bin_cmd!("cosmos");
     cmd.current_dir(td.path()).arg("plan").arg("validate");
     cmd.assert().success().stdout(predicate::str::contains("Plan validation OK"));
 
@@ -61,7 +61,7 @@ task_file = "archive/0001.md"
 "#,
     )?;
 
-    let mut cmd = Command::cargo_bin("cosmos")?;
+    let mut cmd = assert_cmd::cargo::cargo_bin_cmd!("cosmos");
     cmd.current_dir(td.path()).arg("plan").arg("validate");
     cmd.assert().failure().stdout(predicate::str::contains("Plan validation found"));
     Ok(())

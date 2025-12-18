@@ -8,12 +8,12 @@ fn generate_from_template_folder() -> Result<(), Box<dyn std::error::Error>> {
     let out = td.path().join("out");
 
     // dry-run: should list files
-    let mut cmd = Command::cargo_bin("cosmos")?;
+    let mut cmd = assert_cmd::cargo::cargo_bin_cmd!("cosmos");
     cmd.arg("generate").arg("--template").arg("default");
     cmd.assert().success().stdout(predicate::str::contains("Template 'default' matched"));
 
     // apply to out dir with project name
-    let mut cmd = Command::cargo_bin("cosmos")?;
+    let mut cmd = assert_cmd::cargo::cargo_bin_cmd!("cosmos");
     cmd.arg("generate").arg("--template").arg("default").arg("--apply").arg("--out-dir").arg(out.to_str().unwrap()).arg("--project-name").arg("myproj").arg("--verify");
     cmd.assert().success().stdout(predicate::str::contains("Verification summary"));
 
