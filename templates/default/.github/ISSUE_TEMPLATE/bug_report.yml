@@ -1,0 +1,38 @@
+name: Bug report
+about: Create a report to help us improve
+labels: ["bug"]
+
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: "描述（Description）"
+      description: "请清楚描述问题。"
+      placeholder: "发生了什么？期望行为是什么？"
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: "复现步骤（Reproduction）"
+      description: "按步骤列出复现流程。"
+      required: true
+  - type: textarea
+    id: code
+    attributes:
+      label: "最小可复现示例（Minimal reproducible example）"
+      description: "粘贴最小代码片段或提供仓库路径。"
+  - type: dropdown
+    id: ai_used
+    attributes:
+      label: "是否使用 AI 帮助（Was AI used）"
+      description: "是否在排查或补全代码时使用了 AI（Copilot/LLM 等）。"
+      options:
+        - value: yes
+          label: Yes
+        - value: no
+          label: No
+  - type: textarea
+    id: ai_prompt
+    attributes:
+      label: "AI Prompt（若使用）"
+      description: "若使用 AI，请粘贴 prompt 与重要输出（可选）。"
