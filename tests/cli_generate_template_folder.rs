@@ -1,7 +1,6 @@
 use assert_cmd::Command;
 use predicates::prelude::*;
 use tempfile::tempdir;
-use std::fs;
 
 #[test]
 fn generate_from_template_folder() -> Result<(), Box<dyn std::error::Error>> {
@@ -15,8 +14,8 @@ fn generate_from_template_folder() -> Result<(), Box<dyn std::error::Error>> {
 
     // apply to out dir with project name
     let mut cmd = Command::cargo_bin("cosmos")?;
-    cmd.arg("generate").arg("--template").arg("default").arg("--apply").arg("--out-dir").arg(out.to_str().unwrap()).arg("--project-name").arg("myproj");
-    cmd.assert().success().stdout(predicate::str::contains("Template files written to"));
+    cmd.arg("generate").arg("--template").arg("default").arg("--apply").arg("--out-dir").arg(out.to_str().unwrap()).arg("--project-name").arg("myproj").arg("--verify");
+    cmd.assert().success().stdout(predicate::str::contains("Verification summary"));
 
     // check some files copied and rendered
     assert!(out.join("Cargo.toml").exists());
@@ -30,7 +29,11 @@ fn generate_from_template_folder() -> Result<(), Box<dyn std::error::Error>> {
 
     // additional template baseline files
     assert!(out.join(".github/workflows/ci.yml").exists());
+    assert!(out.join(".github/workflows/cosmos-validate.yml").exists());
+    assert!(out.join(".github/workflows/validate-plan.yml").exists());
+    assert!(out.join(".github/workflows/release.yml").exists());
     assert!(out.join(".github/copilot-instructions.md").exists());
+    assert!(out.join(".github/copilot-setup-steps.yml").exists());
     assert!(out.join(".githooks/pre-commit").exists());
     assert!(out.join("plan/tasks/0001-template.md").exists());
     assert!(out.join("plan/archive/0000-init-template.md").exists());
@@ -41,6 +44,15 @@ fn generate_from_template_folder() -> Result<(), Box<dyn std::error::Error>> {
     assert!(out.join("CHANGELOG.md").exists());
     assert!(out.join("LICENSE").exists());
     assert!(out.join("project.toml").exists());
+
+    // project.toml should be rendered with project name
+    let p = std::fs::read_to_string(out.join("project.toml"))?;
+    assert!(p.contains("name = \"myproj\""));
+
+
+    // project.toml should be rendered with project name
+    let p = std::fs::read_to_string(out.join("project.toml"))?;
+    assert!(p.contains("name = \"myproj\""));
 
     Ok(())
 }

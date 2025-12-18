@@ -1,7 +1,6 @@
 use assert_cmd::Command;
 use predicates::prelude::*;
 use tempfile::tempdir;
-use std::fs;
 
 #[test]
 fn generate_basis_dry_run_then_apply() -> Result<(), Box<dyn std::error::Error>> {
