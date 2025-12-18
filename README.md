@@ -60,6 +60,16 @@ cargo test
 
 本仓库同时作为 `cosmos` CLI 的示例模板。`cosmos` 可以生成、校验并管理项目结构与 `plan/` 流程。本仓库的模板说明位于 `templates/this_repo.toml`。
 
+安装（本地 / 开发者）:
+
+```bash
+# 构建并运行 locally
+cargo run -p rust-repo-template --bin cosmos -- <cmd>
+
+# 或安装到系统（在仓库根目录）：
+cargo install --path . --bin cosmos
+```
+
 示例用法（**默认 dry-run**）：
 ```bash
 # 列出将要生成的文件（不写盘）
@@ -72,6 +82,11 @@ cargo run -p rust-repo-template --bin cosmos -- generate --template this_repo --
 cargo run -p rust-repo-template --bin cosmos -- validate --level quick
 ```
 
+发布与 CHANGELOG:
+- 发布由 `git tag` 触发：推送形如 `vX.Y.Z` 的 tag 会触发 `.github/workflows/release.yml` 来构建发布产物并创建 GitHub Release。
+- 新增日志请写入 `CHANGELOG.md` 的 `Unreleased` 段落，并在发布时移动到对应版本条目（参见 `docs/release.md`）。
+
+更多使用与示例请参见 `docs/cosmos.md`。
 更多文档：参见 `docs/cosmos.md`。
 
 
