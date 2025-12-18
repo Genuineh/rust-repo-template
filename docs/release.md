@@ -26,9 +26,31 @@ The repository has a GitHub Action (`.github/workflows/release.yml`) that will r
 - It builds release artifacts (the `cosmos` binary) and attaches them to the GitHub Release.
 - If the repo contains crates and the `CARGO_REGISTRY_TOKEN` secret is configured, the workflow will also attempt to `cargo publish` (configured in `release.yml`).
 
-5. (Optional) Publish additional artifacts or cross-compile for other platforms and attach to the release via GitHub UI or workflow updates.
+5. Install / Verify the binary (embedded templates):
+   - Install locally for testing:
 
-6. Verify the Release page on GitHub and optionally follow-up with docs / announcement.
+```bash
+# Build and install the binary on your system
+cargo install --path . --bin cosmos
+```
+
+   - Or install directly from the repository tag (once pushed):
+
+```bash
+# Install a specific release tag from GitHub (will build from source)
+cargo install --git https://github.com/<org>/<repo> --tag v0.2.0 --bin cosmos
+```
+
+   - After installation, the binary includes embedded templates. Example usage:
+
+```bash
+# Create a new project from the embedded default template in current dir
+cosmos generate --template default --apply --out-dir ./myproj --project-name myproj --verify
+```
+
+6. (Optional) Publish additional artifacts or cross-compile for other platforms and attach to the release via GitHub UI or workflow updates.
+
+7. Verify the Release page on GitHub and optionally follow-up with docs / announcement.
 
 Notes:
 - If you want to make releases reproducible and sign artifacts, consider adding signed tags and additional CI steps to produce checksums and signature files.

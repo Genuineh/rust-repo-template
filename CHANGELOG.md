@@ -2,27 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## 0.2.0 - 2025-12-18
 
 ### Added
-- New CLI tool `cosmos` for project generation, validation and plan management (generate / validate / plan list / plan validate / ai-eval). 🛠️
-- `generate` command (dry-run default, `--apply` to write files) to copy template files locally. 📁
-- `validate` command with structural, CI/workflow, plan checks and non-LLM AI heuristics. 🔍
-- `plan` subcommands: `list` and `validate` to manage `plan/` lifecycle and detect inconsistencies. 🗂️
-- `ai-eval` command with rule-based checks and scaffolded LLM plugin behind feature flag `llm`. 🤖
-- Template manifest added: `templates/default.toml`. 📦
-- Tests for CLI subcommands and examples under `tests/cli_*.rs`. ✅
-- Docs: `docs/cosmos.md` with usage and docs integration. 📚
-- CI: `c/` workflow `cosmos-validate.yml` to run `cargo test` and quick `cosmos validate`. 🔁
-- Release workflow: `.github/workflows/release.yml` to build artifacts and create GitHub releases on tag push. 🚀
+- Embed `templates/default/` into the `cosmos` binary so installed users can generate the default template without a local template repo. ✅
+- `--verify` for `cosmos generate` that runs `cargo fmt --check`, `cargo clippy` and `cargo test` on generated projects. 🔧
+- Feature-gated LLM scaffold with a testable `stub` provider and docs (`docs/llm.md`). 🤖
+- `tests/template_sync.rs` to detect `.github` template drift. 📋
 
 ### Changed
-- Project README updated with `cosmos` usage examples and installation guidance. ✍️
+- Skip Handlebars rendering for workflows and files containing GitHub `${{` expressions to avoid parsing errors. 🛡️
+- Template and docs improvements; tests and CI coverage enhancements.
 
 ### Fixed
-- Various test and edge-case fixes discovered during implementation and tests. 🐛
+- Various test and formatting fixes discovered during implementation and tests. 🐛
 
 ---
+
+## Unreleased
+
+(ongoing work)
 
 ## Release process
 See `docs/release.md` for the recommended release workflow and notes about tagging and publishing to crates.io.

@@ -68,6 +68,16 @@ cargo run -p rust-repo-template --bin cosmos -- <cmd>
 
 # 或安装到系统（在仓库根目录）：
 cargo install --path . --bin cosmos
+
+# （发布后）从 GitHub release 安装（会从源构建）：
+# cargo install --git https://github.com/<your-org>/rust-repo-template --tag v0.2.0 --bin cosmos
+```
+
+该二进制内置了 `templates/default/`，因此安装后你可以在任意目录运行：
+
+```bash
+# 使用内置 template 生成并同时运行 verify
+cosmos generate --template default --apply --out-dir ./myproj --project-name myproj --verify
 ```
 
 示例用法（**默认 dry-run**）：
