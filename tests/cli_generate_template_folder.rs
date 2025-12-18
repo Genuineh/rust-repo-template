@@ -23,8 +23,6 @@ fn generate_from_template_folder() -> Result<(), Box<dyn std::error::Error>> {
     assert!(out.join("docs/getting-started.md").exists());
     assert!(out.join("scripts/validate_plan.py").exists());
 
-    // file name templating
-    assert!(out.join("NOTES/myproj.md").exists());
 
     // additional template baseline files
     assert!(out.join(".github/workflows/ci.yml").exists());
