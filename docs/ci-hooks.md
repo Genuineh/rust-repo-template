@@ -31,4 +31,8 @@ PR / Release behavior:
 - Create a tag starting with `v` (e.g. `v1.2.0`) and push it; tag pushes trigger the full pipeline and an automated Release workflow which builds, tests, and creates a GitHub Release.
 - If you need manual runs, use the workflow dispatch to trigger the CI pipeline by hand.
 
+Using `project.toml` to customize CI behavior:
+- Add `project.toml` at the repository root to configure project type, artifact outputs and CI switches (e.g. `run_build`, `run_tests`, `run_docs`).
+- The `prepare` job reads `project.toml` and the pipeline runs only the jobs enabled by your configuration (for example, set `artifact.outputs = ["docker"]` to enable docker build/publish in the `build` job).
+
 See `.github/custom/README.md` for more examples and security notes.
