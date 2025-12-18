@@ -83,6 +83,15 @@ cargo run -p rust-repo-template --bin cosmos -- ai-eval --mode llm
 
 将来会支持 `.cosmos.toml` 或 `.repo-guard.toml` 来定制规则开关、忽略列表和（可选）LLM provider 配置。当前工具使用内置默认规则。
 
+## 持续集成 (CI) 集成 ✅
+
+仓库已包含 GitHub Action `./github/workflows/cosmos-validate.yml`，会在 PR 与 push 到 `main` 时运行：
+
+- `cargo test`（所有测试）
+- `cargo run -p rust-repo-template --bin cosmos -- validate --level quick`（快速校验）
+
+你可以在 `.github/workflows/cosmos-validate.yml` 中调整触发条件或扩展为更严格的规则（例如：运行 `cosmos validate --level full` 或添加发布打包步骤）。
+
 ## 开发者说明
 
 - 源码入口：`src/bin/cosmos.rs`。
