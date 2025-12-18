@@ -1,0 +1,18 @@
+# Pre-installation steps for Copilot ephemeral environment
+# These steps help Copilot build and test the repo faster and more reliably.
+steps:
+  - name: install-rustup
+    run: |
+      curl https://sh.rustup.rs -sSf | sh -s -- -y
+      source $HOME/.cargo/env || true
+      rustup toolchain install stable --no-self-update
+  - name: install-cargo-tools
+    run: |
+      source $HOME/.cargo/env || true
+      cargo install cargo-edit --version 0.11.5 || true
+      cargo install cargo-tarpaulin || true
+  - name: verify
+    run: |
+      source $HOME/.cargo/env || true
+      rustc --version
+      cargo --version
