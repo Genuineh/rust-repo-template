@@ -30,6 +30,7 @@ cargo test
 - 我们提供了 GitHub Issue Forms（Bug / Feature）包含 AI 使用字段，提交 issue 时请使用表单并填写是否使用 AI 与 prompt（若有）。
 - 如果在 PR 中使用了 AI（例如 Copilot / LLM），请在 PR 模板内注明「使用了 AI」，并附上 prompt 与简短自检结论。
 - 我们在 `.github/ai/prompt_templates.md` 提供了常用 prompt 示例，供复现与检查。
+- 项目文档位于 `docs/`，你可以本地用 `mkdocs build` 构建，或启用 GitHub Pages（可选择使用 `.github/workflows/docs-deploy.yml` 自动部署）。
 
 
 ## 开发规范 🔧
@@ -37,6 +38,8 @@ cargo test
 - 使用 `rustfmt` 和 `clippy`：
   - `cargo fmt --all`  
   - `cargo clippy --all-targets --all-features -- -D warnings`
+- 代码风格配置：仓库根目录包含 `rustfmt.toml` 与 `.editorconfig`，请在提交前使用 `cargo fmt` 格式化并遵循这些设置。
+- 推荐：在 VS Code 中启用 `Format on Save`（`.vscode/settings.json` 已包含示例设置）。
 - 编写单元测试，并保持测试快速且确定性
 
 

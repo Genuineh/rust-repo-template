@@ -1,0 +1,13 @@
+max_width = 100
+edition = "2021"
+use_small_heuristics = "Max"
+hard_tabs = false
+tab_spaces = 4
+newline_style = "Unix"
+merge_imports = true
+reorder_imports = true
+normalize_doc_attributes = true
+wrap_comments = true
+
+# Keep imports grouped and tidy
+group_imports = "StdExternalCrate"
