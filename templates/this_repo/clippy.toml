@@ -1,0 +1,14 @@
+# clippy configuration (template)
+# Configure Clippy options here. Many lints are best enabled/disabled in code
+# with `#[allow(...)]` or `#[deny(...)]` attributes; use this file for global settings.
+
+# Minimum supported Rust version used by clippy for some checks (optional)
+# Set to your project's MSRV, e.g. "1.70"
+msrv = "1.70"
+
+# Example: uncomment to allow/deny specific lints globally (use cautiously)
+# allow = ["clippy::missing_panics_doc", "clippy::module_name_repetitions"]
+# warn  = ["clippy::pedantic"]
+# deny  = ["clippy::unwrap_used"]
+
+# Note: prefer per-crate or inline attributes for fine-grained control.

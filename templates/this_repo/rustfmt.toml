@@ -1,0 +1,22 @@
+# rustfmt configuration (template)
+# Common, opinionated rules suitable for application-level projects.
+
+# Maximum line width before wrapping
+max_width = 100
+# Use spaces instead of tabs by default
+hard_tabs = false
+# Number of spaces per tab
+tab_spaces = 4
+# Target Rust edition
+edition = "2021"
+# Try to format code in doc comments
+format_code_in_doc_comments = true
+# Normalize comment whitespace and wrapping
+normalize_comments = true
+wrap_comments = true
+# Keep Unix line endings
+newline_style = "Unix"
+# Where possible, prefer the field init shorthand
+use_field_init_shorthand = true
+# Reorder imports to group standard/external/local
+reorder_imports = true
