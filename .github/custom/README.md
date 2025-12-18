@@ -3,12 +3,21 @@ Custom CI hooks
 This directory allows repository owners to insert custom CI logic into fixed pipeline stages.
 
 Naming convention:
- - `.github/custom/fmt.sh`      -> runs during `fmt` stage after `cargo fmt --check`
- - `.github/custom/clippy.sh`   -> runs during `clippy` stage after `cargo clippy`
- - `.github/custom/build.sh`    -> runs during `build` stage after `cargo build`
- - `.github/custom/test.sh`     -> runs during `test` stage after `cargo test`
- - `.github/custom/security.sh` -> runs during `security` stage after `cargo audit`
- - `.github/custom/docs.sh`     -> runs during `docs` stage after `cargo doc`
+ - Before/after hooks use `before-<stage>.sh` and `after-<stage>.sh` so you can run logic either before or after a fixed step.
+ - Examples:
+   - `.github/custom/before-fmt.sh` -> runs before `cargo fmt --check`
+   - `.github/custom/after-fmt.sh`  -> runs after `cargo fmt --check`
+   - `.github/custom/before-clippy.sh` -> runs before `cargo clippy`
+   - `.github/custom/after-clippy.sh`  -> runs after `cargo clippy`
+   - `.github/custom/before-build.sh` -> runs before `cargo build`
+   - `.github/custom/after-build.sh`  -> runs after `cargo build`
+   - `.github/custom/before-test.sh`  -> runs before `cargo test`
+   - `.github/custom/after-test.sh`   -> runs after `cargo test`
+   - `.github/custom/before-security.sh` -> runs before `cargo audit`
+   - `.github/custom/after-security.sh`  -> runs after `cargo audit`
+   - `.github/custom/before-docs.sh` -> runs before `cargo doc`
+   - `.github/custom/after-docs.sh`  -> runs after `cargo doc`
+ - Backward compatibility: existing single-name hooks like `fmt.sh` / `clippy.sh` are still supported; the CI will run the new before/after hooks in preference to the single hook when both exist.
 
 Requirements for hook scripts:
  - Must be non-interactive and return a non-zero exit code on failure.

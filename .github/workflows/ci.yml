@@ -16,15 +16,23 @@ jobs:
         with:
           toolchain: stable
           profile: minimal
+      - name: Run before-fmt hook if present
+        run: |
+          if [ -f .github/custom/before-fmt.sh ]; then
+            chmod +x .github/custom/before-fmt.sh
+            .github/custom/before-fmt.sh
+          else
+            echo "No before-fmt hook found, skipping"
+          fi
       - name: Run rustfmt check
         run: cargo fmt --all -- --check
-      - name: Run custom fmt hook if present
+      - name: Run after-fmt hook if present
         run: |
-          if [ -f .github/custom/fmt.sh ]; then
-            chmod +x .github/custom/fmt.sh
-            .github/custom/fmt.sh
+          if [ -f .github/custom/after-fmt.sh ]; then
+            chmod +x .github/custom/after-fmt.sh
+            .github/custom/after-fmt.sh
           else
-            echo "No custom fmt hook found, skipping"
+            echo "No after-fmt hook found, skipping"
           fi
 
   clippy:
@@ -37,15 +45,23 @@ jobs:
         with:
           toolchain: stable
           profile: minimal
+      - name: Run before-clippy hook if present
+        run: |
+          if [ -f .github/custom/before-clippy.sh ]; then
+            chmod +x .github/custom/before-clippy.sh
+            .github/custom/before-clippy.sh
+          else
+            echo "No before-clippy hook found, skipping"
+          fi
       - name: Run clippy
         run: cargo clippy --all-targets --all-features -- -D warnings
-      - name: Run custom clippy hook if present
+      - name: Run after-clippy hook if present
         run: |
-          if [ -f .github/custom/clippy.sh ]; then
-            chmod +x .github/custom/clippy.sh
-            .github/custom/clippy.sh
+          if [ -f .github/custom/after-clippy.sh ]; then
+            chmod +x .github/custom/after-clippy.sh
+            .github/custom/after-clippy.sh
           else
-            echo "No custom clippy hook found, skipping"
+            echo "No after-clippy hook found, skipping"
           fi
 
   build:
@@ -71,15 +87,23 @@ jobs:
           profile: minimal
       - name: Show Rust version
         run: rustc --version
+      - name: Run before-build hook if present
+        run: |
+          if [ -f .github/custom/before-build.sh ]; then
+            chmod +x .github/custom/before-build.sh
+            .github/custom/before-build.sh
+          else
+            echo "No before-build hook found, skipping"
+          fi
       - name: Build (release)
         run: cargo build --all --release
-      - name: Run custom build hook if present
+      - name: Run after-build hook if present
         run: |
-          if [ -f .github/custom/build.sh ]; then
-            chmod +x .github/custom/build.sh
-            .github/custom/build.sh
+          if [ -f .github/custom/after-build.sh ]; then
+            chmod +x .github/custom/after-build.sh
+            .github/custom/after-build.sh
           else
-            echo "No custom build hook found, skipping"
+            echo "No after-build hook found, skipping"
           fi
 
   test:
@@ -92,15 +116,23 @@ jobs:
         with:
           toolchain: stable
           profile: minimal
+      - name: Run before-test hook if present
+        run: |
+          if [ -f .github/custom/before-test.sh ]; then
+            chmod +x .github/custom/before-test.sh
+            .github/custom/before-test.sh
+          else
+            echo "No before-test hook found, skipping"
+          fi
       - name: Run tests
         run: cargo test --all --tests --verbose
-      - name: Run custom test hook if present
+      - name: Run after-test hook if present
         run: |
-          if [ -f .github/custom/test.sh ]; then
-            chmod +x .github/custom/test.sh
-            .github/custom/test.sh
+          if [ -f .github/custom/after-test.sh ]; then
+            chmod +x .github/custom/after-test.sh
+            .github/custom/after-test.sh
           else
-            echo "No custom test hook found, skipping"
+            echo "No after-test hook found, skipping"
           fi
 
   security:
@@ -111,15 +143,23 @@ jobs:
       - name: Install cargo-audit
         run: |
           cargo install --locked cargo-audit || true
+      - name: Run before-security hook if present
+        run: |
+          if [ -f .github/custom/before-security.sh ]; then
+            chmod +x .github/custom/before-security.sh
+            .github/custom/before-security.sh
+          else
+            echo "No before-security hook found, skipping"
+          fi
       - name: Run cargo-audit
         run: cargo audit || true
-      - name: Run custom security hook if present
+      - name: Run after-security hook if present
         run: |
-          if [ -f .github/custom/security.sh ]; then
-            chmod +x .github/custom/security.sh
-            .github/custom/security.sh
+          if [ -f .github/custom/after-security.sh ]; then
+            chmod +x .github/custom/after-security.sh
+            .github/custom/after-security.sh
           else
-            echo "No custom security hook found, skipping"
+            echo "No after-security hook found, skipping"
           fi
 
   docs:
@@ -132,14 +172,22 @@ jobs:
         with:
           toolchain: stable
           profile: minimal
+      - name: Run before-docs hook if present
+        run: |
+          if [ -f .github/custom/before-docs.sh ]; then
+            chmod +x .github/custom/before-docs.sh
+            .github/custom/before-docs.sh
+          else
+            echo "No before-docs hook found, skipping"
+          fi
       - name: Build docs
         run: cargo doc --no-deps
-      - name: Run custom docs hook if present
+      - name: Run after-docs hook if present
         run: |
-          if [ -f .github/custom/docs.sh ]; then
-            chmod +x .github/custom/docs.sh
-            .github/custom/docs.sh
+          if [ -f .github/custom/after-docs.sh ]; then
+            chmod +x .github/custom/after-docs.sh
+            .github/custom/after-docs.sh
           else
-            echo "No custom docs hook found, skipping"
+            echo "No after-docs hook found, skipping"
           fi
 
