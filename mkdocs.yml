@@ -1,0 +1,14 @@
+site_name: rust-repo-template docs
+site_url: https://example.com
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - CI Hooks: ci-hooks.md
+  - AI Collaboration: ai-collaboration.md
+  - Contributing: contributing.md
+theme:
+  name: material
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/<your-org>/<repo>
