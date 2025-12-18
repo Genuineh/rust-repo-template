@@ -214,11 +214,12 @@ steps:
 ## 12. 结语与下一步建议 ✅
 
 - 我已将基础指南（含 Copilot 最佳实践与示例文件）添加到 `docs/AGENT_INSTRUCTIONS.md`。
-- 如你愿意，我可以：
-  - 将示例 `.github/copilot-instructions.md` 与 `.github/copilot-setup-steps.yml` 添加到仓库并直接提交到 `main`；或
-  - 先创建 issue 以便维护者审阅这些新增策略。
+- 我已在仓库中添加 `plan/` 流程（`plan/todo.toml`、`plan/tasks/`、`plan/archive/`）、helper scripts（`scripts/plan_create.py`、`scripts/plan_close.py`、`scripts/validate_plan.py`），以及用于基础校验的 GitHub Action `validate-plan.yml`。
+- 如需，我可以继续：
+  - 增强 `validate-plan` 规则或添加 pre-commit 钩子；或
+  - 将 `plan/` 流程的文档与团队协作规范合并到 `CONTRIBUTING.md` 并创建示例任务以演示工作流。
 
-请告诉我你希望我接下来直接提交示例文件，还是先创建 issue 征求意见。
+如果你希望我接下来做任何一项，请告诉我：`enhance-ci`（增强 CI 校验）、`add-hooks`（添加 pre-commit 钩子）、或 `create-demo-task`（创建示例任务）。
 
 ---
 

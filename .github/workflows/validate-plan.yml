@@ -1,0 +1,20 @@
+name: Validate Plan
+
+on:
+  pull_request:
+    paths:
+      - 'plan/**'
+      - 'scripts/**'
+
+jobs:
+  validate-plan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - name: Run plan validation
+        run: |
+          python3 scripts/validate_plan.py
