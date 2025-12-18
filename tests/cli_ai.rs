@@ -1,0 +1,18 @@
+use assert_cmd::Command;
+use predicates::prelude::*;
+
+#[test]
+fn ai_eval_rule_ok() -> Result<(), Box<dyn std::error::Error>> {
+    let mut cmd = Command::cargo_bin("cosmos")?;
+    cmd.arg("ai-eval").arg("--mode").arg("rule");
+    cmd.assert().success().stdout(predicate::str::contains("AI heuristics"));
+    Ok(())
+}
+
+#[test]
+fn ai_eval_llm_unavailable() -> Result<(), Box<dyn std::error::Error>> {
+    let mut cmd = Command::cargo_bin("cosmos")?;
+    cmd.arg("ai-eval").arg("--mode").arg("llm");
+    cmd.assert().failure().stdout(predicate::str::contains("not enabled"));
+    Ok(())
+}

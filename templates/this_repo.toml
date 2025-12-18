@@ -1,0 +1,10 @@
+name = "rust-repo-template"
+
+[categories]
+basis = ["Cargo.toml", "README.md", "LICENSE", "CONTRIBUTING.md"]
+docs = ["docs/**"]
+ci = [".github/**"]
+tests = ["tests/**"]
+examples = ["examples/**"]
+scripts = ["scripts/**"]
+plan = ["plan/**"]

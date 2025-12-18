@@ -6,6 +6,7 @@ nav:
   - CI Hooks: ci-hooks.md
   - AI Collaboration: ai-collaboration.md
   - Contributing: contributing.md
+  - Cosmos (tool): cosmos.md
 theme:
   name: material
 extra:
