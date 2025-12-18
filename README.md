@@ -30,7 +30,15 @@ cargo test
 - 我们提供了 GitHub Issue Forms（Bug / Feature）包含 AI 使用字段，提交 issue 时请使用表单并填写是否使用 AI 与 prompt（若有）。
 - 如果在 PR 中使用了 AI（例如 Copilot / LLM），请在 PR 模板内注明「使用了 AI」，并附上 prompt 与简短自检结论。
 - 我们在 `.github/ai/prompt_templates.md` 提供了常用 prompt 示例，供复现与检查。
+- 仓库包含对 Copilot 的指令文件（`.github/copilot-instructions.md`）以及 Copilot ephemeral 环境预装示例（`.github/copilot-setup-steps.yml`），用于提高自动化 agent 的构建与测试成功率。
 - 项目文档位于 `docs/`，你可以本地用 `mkdocs build` 构建，或启用 GitHub Pages（可选择使用 `.github/workflows/docs-deploy.yml` 自动部署）。
+
+---
+
+## 项目策略与决策说明 🧾
+
+- `Cargo.lock`：**保留**在模板中以便提供可复现的示例构建与一致的 CI 结果（如果你更偏向库模板，可在 fork 后移除并在 README 中注明）。
+- 文档归档策略：我们已将较为细节的文档移动到 `docs/archive/`，主要文档集中在 `docs/getting-started.md` 与 `docs/AGENT_INSTRUCTIONS.md` 以便维护者与 AI 更快速定位关键信息。
 
 
 ## 开发规范 🔧
