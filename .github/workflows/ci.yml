@@ -11,8 +11,26 @@ on:
 # or when a tag starting with `v` is pushed (release).
 
 jobs:
+  pre-commit:
+    if: ${{ (github.event_name == 'pull_request_review' && github.event.review.state == 'approved' && github.event.pull_request != null && !github.event.pull_request.draft) || startsWith(github.ref, 'refs/tags/v') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - name: Install pre-commit
+        run: pip install --upgrade --user pre-commit
+      - name: Run pre-commit
+        run: |
+          # ensure PATH contains user's local bin for pip installs
+          export PATH="$HOME/.local/bin:$PATH"
+          pre-commit run --all-files
+
   fmt:
     if: ${{ (github.event_name == 'pull_request_review' && github.event.review.state == 'approved' && github.event.pull_request != null && !github.event.pull_request.draft) || startsWith(github.ref, 'refs/tags/v') }}
+    needs: pre-commit
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

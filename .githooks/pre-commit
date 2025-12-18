@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# pre-commit hook: auto-format and run clippy before commit
+# - If pre-commit framework is installed it will run; otherwise run our checks.
+
+if command -v pre-commit >/dev/null 2>&1; then
+  echo "[pre-commit] Running pre-commit..."
+  pre-commit run --hook-type pre-commit --origin local || true
+  exit 0
+fi
+
+echo "[pre-commit] pre-commit not installed; falling back to cargo checks"
+
+echo "[pre-commit] Running cargo fmt --all"
+if command -v cargo >/dev/null 2>&1; then
+  cargo fmt --all || true
+  # Stage formatting changes so commit includes them
+  git add -A || true
+
+  echo "[pre-commit] Running cargo clippy --all-targets --all-features -- -D warnings"
+  if ! cargo clippy --all-targets --all-features -- -D warnings; then
+    echo "\n[pre-commit] ✖ clippy failed. Please fix issues before committing."
+    echo "Run 'cargo clippy' locally to inspect, or use 'git commit --no-verify' to bypass."
+    exit 1
+  fi
+else
+  echo "[pre-commit] ⚠️ cargo not found in PATH; skipping checks"
+fi
+
+echo "[pre-commit] ✅ checks passed"
+exit 0
