@@ -1,5 +1,64 @@
+[cosmos]
+schema_version = 1
+
+[project]
 name = "{{project-name}}"
+description = "Short description of the project"
+type = "service" # one of: "service" | "library" | "application"
 version = "0.1.0"
-description = "Generated from the default template"
-# optional fields
-# docker_image = "org/{{project-name}}"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/<your-org>/<repo>"
+homepage = ""
+
+[maintainers]
+owners = ["your-github-username"]
+contacts = ["you@example.com"]
+
+[build]
+tool = "cargo"
+profile = "release"
+features = ["default"]
+bins = ["{{bin-name}}"]
+
+[artifact]
+outputs = ["docker", "binary"] # options: docker, binary, crate, wasm, deb, rpm
+
+[docker]
+enabled = true
+image = "ghcr.io/<your-org>/{{project-name}}"
+dockerfile = "Dockerfile"
+tags = ["latest", "v{version}"]
+ports = [8080]
+entrypoint = ["/usr/local/bin/{{bin-name}}"]
+
+[ci]
+quick_gate = ["pre-commit"]
+run_build = true
+run_tests = true
+run_security = true
+run_docs = true
+on_pr_approval = true
+on_tag = true
+manual_dispatch = true
+
+[release]
+tag_prefix = "v"
+auto_release = true
+changelog = "git-log"
+
+[clippy]
+msrv = "1.70.0"
+allow = ["clippy::module_name_repetitions"]
+
+[format]
+rustfmt = "rustfmt.toml"
+editorconfig = ".editorconfig"
+
+[ai]
+policy = "disclose"
+prompts = ".github/ai/prompt_templates.md"
+
+[hooks]
+pre_commit_installer = "./scripts/install-git-hooks.sh"
+custom_hooks_dir = ".github/custom"

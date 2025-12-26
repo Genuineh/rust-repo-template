@@ -213,14 +213,12 @@ steps:
 
 ## 12. 结语与下一步建议 ✅
 
-- 我已将基础指南（含 Copilot 最佳实践与示例文件）添加到 `docs/AGENT_INSTRUCTIONS.md`。
-- 我已在仓库中添加 `plan/` 流程（`plan/todo.toml`、`plan/tasks/`、`plan/archive/`）、helper scripts（`scripts/plan_create.py`、`scripts/plan_close.py`、`scripts/validate_plan.py`），以及用于基础校验的 GitHub Action `validate-plan.yml`。
-- 如需，我可以继续：
-  - 增强 `validate-plan` 规则或添加 pre-commit 钩子；或
-  - 将 `plan/` 流程的文档与团队协作规范合并到 `CONTRIBUTING.md` 并创建示例任务以演示工作流。
+- 本模板包含 `plan/` 工作流目录结构（`plan/todo.toml`、`plan/tasks/`、`plan/archive/`）。
+- 本仓库提供了用于管理/校验 plan 的脚本：`scripts/plan_create.py`、`scripts/plan_close.py`、`scripts/validate_plan.py`。
+- CI 中包含 plan 校验工作流（见 `.github/workflows/validate-plan.yml`）。
 
-如果你希望我接下来做任何一项，请告诉我：`enhance-ci`（增强 CI 校验）、`add-hooks`（添加 pre-commit 钩子）、或 `create-demo-task`（创建示例任务）。
+如果你希望进一步加强工作流（例如增加更严格的校验或将部分校验加入 pre-commit），建议先在 issue 中写清楚验收标准再改动。
 
 ---
 
-*文件自动生成：由 GitHub Copilot (Raptor mini (Preview))*
+*本文档可由 AI 辅助生成/更新；以仓库当前代码与 CI 配置为准。*

@@ -1,17 +1,17 @@
 use predicates::prelude::*;
 
 #[test]
-fn ai_eval_rule_ok() -> Result<(), Box<dyn std::error::Error>> {
+fn ai_doctor_ok() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = assert_cmd::cargo::cargo_bin_cmd!("cosmos");
-    cmd.arg("ai-eval").arg("--mode").arg("rule");
-    cmd.assert().success().stdout(predicate::str::contains("AI heuristics"));
+    cmd.arg("ai").arg("doctor");
+    cmd.assert().success().stdout(predicate::str::contains("AI/LLM configuration"));
     Ok(())
 }
 
 #[test]
-fn ai_eval_llm_unavailable() -> Result<(), Box<dyn std::error::Error>> {
+fn ai_eval_unavailable_without_feature() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = assert_cmd::cargo::cargo_bin_cmd!("cosmos");
-    cmd.arg("ai-eval").arg("--mode").arg("llm");
-    cmd.assert().failure().stderr(predicate::str::contains("no LLM provider configured"));
+    cmd.arg("ai").arg("eval");
+    cmd.assert().failure().stderr(predicate::str::contains("not enabled in this build"));
     Ok(())
 }

@@ -1,19 +1,197 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  pull_request_review:
+    types: [submitted]
+  push:
+    tags: ["v*"]
+  workflow_dispatch: {}
+
+# This workflow runs either when an approval review is submitted on a PR (and the review state is "approved"),
+# or when a tag starting with `v` is pushed (release).
 
 jobs:
-  build:
+  prepare:
+    if: ${{ (github.event_name == 'pull_request_review' && github.event.review.state == 'approved' && github.event.pull_request != null && !github.event.pull_request.draft) || startsWith(github.ref, 'refs/tags/v') }}
     runs-on: ubuntu-latest
+    outputs:
+      run_build: ${{ steps.parse.outputs.run_build }}
+      run_tests: ${{ steps.parse.outputs.run_tests }}
+      run_security: ${{ steps.parse.outputs.run_security }}
+      run_docs: ${{ steps.parse.outputs.run_docs }}
+      quick_gate_precommit: ${{ steps.parse.outputs.quick_gate_precommit }}
+      outputs_contains_docker: ${{ steps.parse.outputs.outputs_contains_docker }}
+      docker_image: ${{ steps.parse.outputs.docker_image }}
+      project_version: ${{ steps.parse.outputs.project_version }}
     steps:
       - uses: actions/checkout@v4
       - name: Install Rust
+        uses: dtolnay/rust-toolchain@v1
+      - name: Parse project.toml
+        id: parse
+        run: |
+          cargo run --quiet --bin cosmos -- project gha-outputs
+
+  pre-commit:
+    needs: prepare
+    if: ${{ (github.event_name == 'pull_request_review' && github.event.review.state == 'approved' && github.event.pull_request != null && !github.event.pull_request.draft) && (needs.prepare.outputs.quick_gate_precommit == 'true') || startsWith(github.ref, 'refs/tags/v') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - name: Install pre-commit
+        run: pip install --upgrade --user pre-commit
+      - name: Run pre-commit
+        run: |
+          # ensure PATH contains user's local bin for pip installs
+          export PATH="$HOME/.local/bin:$PATH"
+          pre-commit run --all-files
+
+
+
+
+  build:
+    needs: [pre-commit, prepare]
+    if: ${{ ((github.event_name == 'pull_request_review' && github.event.review.state == 'approved' && github.event.pull_request != null && !github.event.pull_request.draft) || startsWith(github.ref, 'refs/tags/v')) && (needs.prepare.outputs.run_build == 'true') }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        toolchain: [stable, beta]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache cargo registry and target
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ matrix.toolchain }}-${{ hashFiles('**/Cargo.lock') }}
+      - name: Install toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          profile: minimal
+      - name: Show Rust version
+        run: rustc --version
+      - name: Run before-build hook if present
+        run: |
+          if [ -f .github/custom/before-build.sh ]; then
+            chmod +x .github/custom/before-build.sh
+            .github/custom/before-build.sh
+          else
+            echo "No before-build hook found, skipping"
+          fi
+      - name: Build (release)
+        run: cargo build --all --release
+      - name: Run after-build hook if present
+        run: |
+          if [ -f .github/custom/after-build.sh ]; then
+            chmod +x .github/custom/after-build.sh
+            .github/custom/after-build.sh
+          else
+            echo "No after-build hook found, skipping"
+          fi
+      - name: Docker build and push (if configured)
+        if: ${{ needs.prepare.outputs.outputs_contains_docker == 'true' && startsWith(github.ref, 'refs/tags/v') }}
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ${{ github.workspace }}/Dockerfile
+          push: true
+          tags: ${{ needs.prepare.outputs.docker_image }}:${{ needs.prepare.outputs.project_version }},${{ needs.prepare.outputs.docker_image }}:latest
+      - name: Create artifact: binary (if configured)
+        if: ${{ contains(needs.prepare.outputs.outputs_list, 'binary') }}
+        run: |
+          echo "Binary artifact available: target/release/" && ls -la target/release || true
+
+  test:
+    if: ${{ ((github.event_name == 'pull_request_review' && github.event.review.state == 'approved' && github.event.pull_request != null && !github.event.pull_request.draft) || startsWith(github.ref, 'refs/tags/v')) && (needs.prepare.outputs.run_tests == 'true') }}
+    runs-on: ubuntu-latest
+    needs: [build, prepare]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install toolchain
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-      - name: Run fmt check
-        run: cargo fmt --all -- --check || true
-      - name: Run clippy
-        run: cargo clippy --all-targets --all-features -- -D warnings || true
+          profile: minimal
+      - name: Run before-test hook if present
+        run: |
+          if [ -f .github/custom/before-test.sh ]; then
+            chmod +x .github/custom/before-test.sh
+            .github/custom/before-test.sh
+          else
+            echo "No before-test hook found, skipping"
+          fi
       - name: Run tests
-        run: cargo test --workspace --all-features
+        run: cargo test --all --tests --verbose
+      - name: Run after-test hook if present
+        run: |
+          if [ -f .github/custom/after-test.sh ]; then
+            chmod +x .github/custom/after-test.sh
+            .github/custom/after-test.sh
+          else
+            echo "No after-test hook found, skipping"
+          fi
+
+  security:
+    if: ${{ ((github.event_name == 'pull_request_review' && github.event.review.state == 'approved' && github.event.pull_request != null && !github.event.pull_request.draft) || startsWith(github.ref, 'refs/tags/v')) && (needs.prepare.outputs.run_security == 'true') }}
+    runs-on: ubuntu-latest
+    needs: [test, prepare]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install cargo-audit
+        run: |
+          cargo install --locked cargo-audit || true
+      - name: Run before-security hook if present
+        run: |
+          if [ -f .github/custom/before-security.sh ]; then
+            chmod +x .github/custom/before-security.sh
+            .github/custom/before-security.sh
+          else
+            echo "No before-security hook found, skipping"
+          fi
+      - name: Run cargo-audit
+        run: cargo audit || true
+      - name: Run after-security hook if present
+        run: |
+          if [ -f .github/custom/after-security.sh ]; then
+            chmod +x .github/custom/after-security.sh
+            .github/custom/after-security.sh
+          else
+            echo "No after-security hook found, skipping"
+          fi
+
+  docs:
+    if: ${{ ((github.event_name == 'pull_request_review' && github.event.review.state == 'approved' && github.event.pull_request != null && !github.event.pull_request.draft) || startsWith(github.ref, 'refs/tags/v')) && (needs.prepare.outputs.run_docs == 'true') }}
+    runs-on: ubuntu-latest
+    needs: [test, prepare]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+      - name: Run before-docs hook if present
+        run: |
+          if [ -f .github/custom/before-docs.sh ]; then
+            chmod +x .github/custom/before-docs.sh
+            .github/custom/before-docs.sh
+          else
+            echo "No before-docs hook found, skipping"
+          fi
+      - name: Build docs
+        run: cargo doc --no-deps
+      - name: Run after-docs hook if present
+        run: |
+          if [ -f .github/custom/after-docs.sh ]; then
+            chmod +x .github/custom/after-docs.sh
+            .github/custom/after-docs.sh
+          else
+            echo "No after-docs hook found, skipping"
+          fi

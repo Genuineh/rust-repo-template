@@ -1,33 +1,38 @@
 Custom CI hooks
 
-This directory allows repository owners to insert custom CI logic into fixed pipeline stages.
+This directory allows repository owners to insert custom CI logic into a fixed pipeline.
 
-Naming convention:
- - Before/after hooks use `before-<stage>.sh` and `after-<stage>.sh` so you can run logic either before or after a fixed step.
- - Examples:
-   - `.github/custom/before-fmt.sh` -> runs before `cargo fmt --check`
-   - `.github/custom/after-fmt.sh`  -> runs after `cargo fmt --check`
-   - `.github/custom/before-clippy.sh` -> runs before `cargo clippy`
-   - `.github/custom/after-clippy.sh`  -> runs after `cargo clippy`
-   - `.github/custom/before-build.sh` -> runs before `cargo build`
-   - `.github/custom/after-build.sh`  -> runs after `cargo build`
-   - `.github/custom/before-test.sh`  -> runs before `cargo test`
-   - `.github/custom/after-test.sh`   -> runs after `cargo test`
-   - `.github/custom/before-security.sh` -> runs before `cargo audit`
-   - `.github/custom/after-security.sh`  -> runs after `cargo audit`
-   - `.github/custom/before-docs.sh` -> runs before `cargo doc`
-   - `.github/custom/after-docs.sh`  -> runs after `cargo doc`
- - Backward compatibility: existing single-name hooks like `fmt.sh` / `clippy.sh` are still supported; the CI will run the new before/after hooks in preference to the single hook when both exist.
+## How hooks are discovered
 
-Requirements for hook scripts:
- - Must be non-interactive and return a non-zero exit code on failure.
- - Should be executable, but CI will chmod the file automatically if present.
- - Keep scripts short and fast; long-running or interactive tasks are not recommended.
+The main workflow [.github/workflows/ci.yml](../workflows/ci.yml) looks for optional hook scripts under `.github/custom/` using this naming convention:
 
-If a hook file does not exist, the CI will skip that hook silently.
+- `before-<stage>.sh` — runs before the stage's main command
+- `after-<stage>.sh` — runs after the stage's main command
 
-Examples:
- - Add `.github/custom/test.sh` to run additional integration tests or test-matrix logic.
- - Add `.github/custom/security.sh` to run extra scanning tools.
+Currently supported stages:
 
-Security note: custom scripts run in the CI context and will have access to repository contents and runner environment. Avoid storing secrets directly in the scripts; use repository secrets instead.
+- `build` (around `cargo build --release`)
+- `test` (around `cargo test`)
+- `security` (around `cargo audit`)
+- `docs` (around `cargo doc`)
+
+Note: formatting/lint is handled by `pre-commit` (see `.pre-commit-config.yaml`). There is no separate `fmt`/`clippy` stage hook in the CI workflow.
+
+## Requirements
+
+- Hooks must be non-interactive and exit non-zero on failure.
+- CI will `chmod +x` the hook before executing it.
+- Keep hooks short and deterministic.
+
+## Example
+
+Create `.github/custom/before-test.sh` to run extra checks before tests:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "Running extra checks before tests"
+```
+
+Security note: hooks run in CI and have access to the repository contents and runner environment. Do not hardcode secrets; use GitHub Secrets.

@@ -9,6 +9,10 @@ fn templates_github_files_match_repo() {
 
     // list of files expected to be present in both locations
     let required = vec![
+        "CODEOWNERS",
+        "labels.md",
+        "ai/ai-guidelines.md",
+        "ai/prompt_templates.md",
         "copilot-instructions.md",
         "copilot-setup-steps.yml",
         "pull_request_template.md",
@@ -28,7 +32,12 @@ fn templates_github_files_match_repo() {
         let t = fs::read_to_string(tmpl_f).expect("read template file");
         // file-specific expectations
         if p.ends_with("copilot-instructions.md") {
-            let snippets = vec!["Build: `cargo build --workspace`", "Test: `cargo test --workspace`", "Format check: `cargo fmt -- --check`", "copilot-setup-steps.yml"];
+            let snippets = vec![
+                "Build: `cargo build --workspace`",
+                "Test: `cargo test --workspace`",
+                "Format check: `cargo fmt -- --check`",
+                "copilot-setup-steps.yml",
+            ];
             for sn in snippets {
                 assert!(r.contains(sn), "repo file .github/{} missing snippet: {}", p, sn);
                 assert!(t.contains(sn), "template file .github/{} missing snippet: {}", p, sn);
@@ -40,8 +49,14 @@ fn templates_github_files_match_repo() {
                 assert!(t.contains(sn), "template file .github/{} missing snippet: {}", p, sn);
             }
         } else if p.ends_with("pull_request_template.md") {
-            assert!(r.contains("AI usage disclosure") || r.contains("AI usage"), "repo pull request template missing AI disclosure guidance");
-            assert!(t.contains("AI usage disclosure") || t.contains("AI usage"), "template pull request template missing AI disclosure guidance");
+            assert!(
+                r.contains("AI usage disclosure") || r.contains("AI usage"),
+                "repo pull request template missing AI disclosure guidance"
+            );
+            assert!(
+                t.contains("AI usage disclosure") || t.contains("AI usage"),
+                "template pull request template missing AI disclosure guidance"
+            );
         } else if p.contains("ISSUE_TEMPLATE") {
             // ensure fields exist
             assert!(r.len() > 20, "repo issue template seems empty: {}", p);
@@ -55,8 +70,10 @@ fn templates_github_files_match_repo() {
     // workflows: ensure template includes at least the same workflow filenames as repo
     let repo_wf = repo_root.join(".github/workflows");
     let tmpl_wf = tmpl_github.join("workflows");
-    let repo_files: Vec<_> = fs::read_dir(&repo_wf).unwrap().filter_map(|e| e.ok()).map(|e| e.file_name()).collect();
-    let tmpl_files: Vec<_> = fs::read_dir(&tmpl_wf).unwrap().filter_map(|e| e.ok()).map(|e| e.file_name()).collect();
+    let repo_files: Vec<_> =
+        fs::read_dir(&repo_wf).unwrap().filter_map(|e| e.ok()).map(|e| e.file_name()).collect();
+    let tmpl_files: Vec<_> =
+        fs::read_dir(&tmpl_wf).unwrap().filter_map(|e| e.ok()).map(|e| e.file_name()).collect();
 
     for rf in repo_files {
         // skip files that are intentionally not part of template (none expected currently)

@@ -5,7 +5,7 @@ created = "2025-12-18T12:00:00Z"
 [[task]]
 id = "0001"
 title = "Template init"
-status = "open"
+status = "pending_review"
 assignee = "maintainer"
 labels = ["template"]
-task_file = "tasks/0001-template.md"
+task_file = "tasks/0001/task.md"

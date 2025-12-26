@@ -3,10 +3,13 @@ site_url: https://example.com
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
+  - Project Manifest: project-toml.md
   - CI Hooks: ci-hooks.md
   - AI Collaboration: ai-collaboration.md
   - Contributing: contributing.md
   - Cosmos (tool): cosmos.md
+  - Release: release.md
+  - LLM (experimental): llm.md
 theme:
   name: material
 extra:

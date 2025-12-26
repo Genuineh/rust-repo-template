@@ -1,112 +1,177 @@
 # cosmos — project validator & generator
 
-`cosmos` 是本仓库内提供的命令行工具，用来生成、校验并管理项目模板（本仓库也被 `cosmos` 用作示例模板）。
+`cosmos` 是本仓库内提供的命令行工具，用来生成项目文件（模板）、校验仓库结构，并管理 `plan/` 任务流。
 
-## 概览
+## 运行方式
 
-- 二进制名：`cosmos`
-- 目的：生成缺失的项目文件（本地写盘或 dry-run）、校验项目结构与 plan 流程、对 AI 输出进行规则化评估并提供可执行建议。
+`cosmos` 是一个二进制（`src/bin/cosmos.rs`）。常见运行方式：
 
-## 常用命令
-
-### 生成模板（dry-run 默认）
-
-列出将要生成/复制的文件（不写盘）:
+1) 在本仓库里直接运行（包名固定为 `rust-repo-template`）：
 
 ```bash
-cargo run -p rust-repo-template --bin cosmos -- generate --template default --category all
+cargo run -p rust-repo-template --bin cosmos -- <cmd> [args]
 ```
 
-写入本地目录（例如 `./out`）:
+2) 在由模板生成的新仓库里运行（包名通常已变为你的项目名）：
 
 ```bash
-cargo run -p rust-repo-template --bin cosmos -- generate --template default --category all --apply --out-dir ./out
+cargo run --bin cosmos -- <cmd> [args]
 ```
 
-可选 category：`all`, `basis`, `docs`, `ci`, `tests`, `examples`, `scripts`, `plan`
-
----
-
-### 校验项目结构
-
-快速校验（presence/heuristics）:
+3) 安装后在任意目录运行（推荐给日常使用）：
 
 ```bash
-cargo run -p rust-repo-template --bin cosmos -- validate --level quick
+cargo install --path . --bin cosmos
+cosmos <cmd> [args]
 ```
 
-完整校验（更多规则和 plan 检查）:
+## 命令总览
+
+- `cosmos generate`：从模板生成/同步文件（默认 dry-run）
+- `cosmos validate`：校验仓库结构与 plan 规则
+- `cosmos plan`：管理 `plan/` 状态机（创建/评审/流转/归档/钩子）
+- `cosmos ai`：AI/LLM 配置检查与评估（可选 feature）
+
+## generate（生成/同步模板）
+
+默认是 dry-run（只打印将生成的文件，不写盘）：
 
 ```bash
-cargo run -p rust-repo-template --bin cosmos -- validate --level full
+cosmos generate --template default --category all
 ```
 
-输出为简洁的 errors/warnings 列表，退出码非零表示存在问题。
-
----
-
-### plan 管理
-
-列出任务:
+写入到目录（例如 `./out`）：
 
 ```bash
-cargo run -p rust-repo-template --bin cosmos -- plan list
+cosmos generate --template default --category all --apply --out-dir ./out
 ```
 
-校验 plan 结构与 task 文件:
+常用参数：
+
+- `--category`：`all|basis|docs|ci|tests|examples|scripts|plan`
+- `--template`：模板名（默认 `default`）
+- `--apply`：真正写盘（否则 dry-run）
+- `--out-dir` / `-o`：输出目录（默认 `out`）
+- `--project-name`：模板变量 `{{project-name}}`
+- `--var key=value`：额外模板变量，可多次传入
+- `--verify`：生成后在输出目录里跑 `fmt/clippy/test`
+
+“同步”行为（当 `--apply` 且目标目录已存在时）：
+
+- 会检测 **missing / modified / extra** 文件
+- 交互模式会要求确认（删除需要额外输入 `DELETE`）
+- 非交互：`--yes` 自动确认；如存在删除，还需加 `--allow-delete`
+- 默认不会覆盖已存在文件；对比内容不同的文件需 `--force` 才会覆盖
+
+模板来源优先级：
+
+1. 仓库内 `templates/<name>/`（如果存在）
+2. 二进制内置模板（embedded templates）
+3. 可执行文件相邻的 `templates/<name>/`（适合已安装二进制）
+
+## validate（校验仓库）
 
 ```bash
-cargo run -p rust-repo-template --bin cosmos -- plan validate
+cosmos validate --level quick
 ```
 
-`plan validate` 会检查 `plan/todo.toml`、引用的 `task_file` 是否存在、完成的任务是否已归档到 `plan/archive/` 等规则。
+- `--level quick|full`：目前主要用于预留扩展点（两者校验项高度重叠）
+- `--fix`：尝试自动修复部分问题（如 plan 引用路径规范化）
 
----
+退出码约定：
 
-### AI 评估（rule / llm）
+- 有 **errors**：退出码 `2`（适合 CI）
+- 只有 **warnings**：仍返回成功，仅提示
 
-默认的规则评估（无需外部 API）:
+## plan（任务流与钩子）
+
+`plan/` 是一个轻量任务状态机，任务元信息在 `plan/todo.toml`，任务内容在 `plan/tasks/<id>/task.md`，归档后在 `plan/archive/<id>/task.md`。
+
+### 常用命令
+
+列出：
 
 ```bash
-cargo run -p rust-repo-template --bin cosmos -- ai-eval --mode rule
+cosmos plan list
 ```
 
-LLM 驱动评估（需要配置外部 provider，特性可选）:
-
-默认（未启用）情况：
-```bash
-cargo run -p rust-repo-template --bin cosmos -- ai-eval --mode llm
-```
-会以明确错误退出，提示启用特性和配置提供者。
-
-要启用 LLM 功能并运行评估（实验性）：
+创建：
 
 ```bash
-# 编译并启用 llm feature（provider 尚需实现/配置）
-cargo run -p rust-repo-template --bin cosmos --features llm -- ai-eval --mode llm
+cosmos plan create --kind feature --title "Add X" --content "..."
 ```
 
-实现说明：`llm` 的接口被 scaffold 在 `src/llm.rs`，返回典型的错误或结果；未来可以实现具体 provider（如 OpenAI、Anthropic 等）并通过安全的配置（环境变量或 CI secrets）注入。
+更新内容/元数据（不直接改 status）：
 
-## 配置
+```bash
+cosmos plan update --id 0001 --title "New title" --content "..."
+```
 
-将来会支持 `.cosmos.toml` 或 `.repo-guard.toml` 来定制规则开关、忽略列表和（可选）LLM provider 配置。当前工具使用内置默认规则。
+评审（`pending_review -> queued` 或拒绝回退/保持）：
 
-## 持续集成 (CI) 集成 ✅
+```bash
+cosmos plan review --id 0001 --decision accept --message "LGTM" --author alice
+```
 
-仓库已包含 GitHub Action `./github/workflows/cosmos-validate.yml`，会在 PR 与 push 到 `main` 时运行：
+流转：
 
-- `cargo test`（所有测试）
-- `cargo run -p rust-repo-template --bin cosmos -- validate --level quick`（快速校验）
+```bash
+cosmos plan start  --id 0001
+cosmos plan test   --id 0001
+cosmos plan accept --id 0001
+cosmos plan finish --id 0001
+```
 
-你可以在 `.github/workflows/cosmos-validate.yml` 中调整触发条件或扩展为更严格的规则（例如：运行 `cosmos validate --level full` 或添加发布打包步骤）。
+其他：
+
+```bash
+cosmos plan show   --id 0001
+cosmos plan log    --id 0001 --message "note" --author alice
+cosmos plan reopen --id 0001
+cosmos plan delete --id 0001 --yes
+cosmos plan validate --fix
+```
+
+### plan hooks（Python）
+
+你可以在 `scripts/plan-hooks/` 放置 Python 钩子：
+
+- 单文件：`scripts/plan-hooks/<hook>.py`
+- 或目录：`scripts/plan-hooks/<hook>/*.py`（按文件名排序执行）
+
+管理命令：
+
+```bash
+cosmos plan hooks add   --name pre_finish
+cosmos plan hooks list
+cosmos plan hooks check --name pre_finish
+```
+
+### `--ai-validate`（计划流转前的 AI 校验）
+
+`cosmos plan --ai-validate <subcmd ...>` 会在执行对应动作前生成一份 JSON 报告，并把路径通过环境变量 `PLAN_AI_VALIDATION_PATH` 传给 plan hooks。
+
+注意：如果二进制没有启用 `llm` feature，AI 校验不会阻塞（报告会提示“未启用”）。
+
+## ai（LLM：可选 feature）
+
+```bash
+cosmos ai doctor
+```
+
+```bash
+cosmos ai eval
+```
+
+- `ai eval` 需要用 `--features llm` 构建，并配置 `LLM_PROVIDER=stub`（内置 stub provider 仅做演示，会生成 `.cosmos_llm_report.txt`）
+
+## CI 集成
+
+- `.github/workflows/cosmos-validate.yml`：在 PR / push 时运行 `cargo test` + `cosmos validate`
+- `.github/workflows/ci.yml`：主流水线（由 `project.toml` 控制启用哪些 job；支持 `.github/custom/before-*.sh`/`after-*.sh`）
 
 ## 开发者说明
 
-- 源码入口：`src/bin/cosmos.rs`。
-- 模板示例放在：`templates/default.toml`。
-- 测试：`cargo test` 包含 CLI 集成测试（`tests/cli_*.rs`）。
-
----
-
-请把此文档作为快速参考，并在你需要时把更多规则或样例添加到 `docs/` 或模板文件中。
+- 源码入口：`src/bin/cosmos.rs`
+- 模板清单（categories/paths）：`templates/default.toml`
+- 相关测试：`tests/cli_*.rs`

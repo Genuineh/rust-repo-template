@@ -1,6 +1,6 @@
-# {{project-name}}
+# rust-repo-template
 
-> Rust repo template optimized for fast starts and smooth AI collaboration.
+> A Rust repository template optimized for fast starts and smooth AI collaboration.
 
 
 ## Features ✅
@@ -14,8 +14,8 @@
 
 ## 快速开始 🚀
 
-1. 在 GitHub 上复制本模板仓库（Use "Use this template"）
-2. 修改 `Cargo.toml` 中的 `name` / `repository` 等元信息
+1. 在 GitHub 上使用 **Use this template** 创建新仓库
+2. 在新仓库中更新 `Cargo.toml`：`name` / `repository` / `description` 等元信息
 3. 本地运行：
 
 ```bash
@@ -58,7 +58,7 @@ cargo test
 
 ## 宇宙工具：cosmos (示例生成与校验) 🔭
 
-本仓库同时作为 `cosmos` CLI 的示例模板。`cosmos` 可以生成、校验并管理项目结构与 `plan/` 流程。本仓库的模板说明位于 `templates/default.toml`。
+本仓库同时包含 `cosmos` CLI（用于生成/校验模板、以及 `plan/` 工作流管理）。内置模板位于 `templates/default/`，清单位于 `templates/default.toml`。
 
 安装（本地 / 开发者）:
 
@@ -97,7 +97,6 @@ cargo run -p rust-repo-template --bin cosmos -- validate --level quick
 - 新增日志请写入 `CHANGELOG.md` 的 `Unreleased` 段落，并在发布时移动到对应版本条目（参见 `docs/release.md`）。
 
 更多使用与示例请参见 `docs/cosmos.md`。
-更多文档：参见 `docs/cosmos.md`。
 
 
 ---

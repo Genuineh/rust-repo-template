@@ -1,23 +1,50 @@
 [meta]
-owner = "maintainers"
 created = "2025-12-18T12:00:00Z"
+owner = "maintainers"
 
 [[task]]
 id = "0001"
 title = "Initialize plan structure"
-status = "done"
+status = "finished"
 assignee = "copilot"
-created = "2025-12-18T12:00:00Z"
-done = "2025-12-18T12:05:00Z"
-labels = ["process","infra"]
 task_file = "archive/0001-init-plan.md"
 
 [[task]]
 id = "0002"
+kind = "feature"
 title = "Add plan usage docs to README and AGENT_INSTRUCTIONS"
-status = "open"
+status = "pending_review"
 assignee = "alice"
-created = "2025-12-18T12:10:00Z"
-due = "2025-12-25"
-labels = ["docs","process"]
-task_file = "tasks/0002-add-plan-docs.md"
+task_file = "tasks/0002/task.md"
+
+[[task]]
+id = "0003"
+kind = "feature"
+title = "Define project.toml manifest schema + contract"
+status = "finished"
+assignee = "copilot"
+task_file = "archive/0003/task.md"
+
+[[task]]
+id = "0004"
+kind = "feature"
+title = "Add cosmos command: project gha-outputs"
+status = "finished"
+assignee = "copilot"
+task_file = "archive/0004/task.md"
+
+[[task]]
+id = "0005"
+kind = "feature"
+title = "Migrate CI workflows from Python parser to cosmos"
+status = "finished"
+assignee = "copilot"
+task_file = "archive/0005/task.md"
+
+[[task]]
+id = "0006"
+kind = "feature"
+title = "Add cosmos project validate (drift + consistency checks)"
+status = "finished"
+assignee = "copilot"
+task_file = "archive/0006/task.md"

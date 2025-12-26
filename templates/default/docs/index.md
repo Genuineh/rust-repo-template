@@ -6,7 +6,11 @@ Quick links:
 
 - [Getting Started](getting-started.md)
 - [CI Hooks](ci-hooks.md)
+- [AI Collaboration](ai-collaboration.md)
 - [Contributing](contributing.md)
+- [Cosmos (tool)](cosmos.md)
+- [Release](release.md)
+- [LLM (experimental)](llm.md)
 
 ---
 

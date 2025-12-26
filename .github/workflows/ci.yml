@@ -25,14 +25,12 @@ jobs:
       project_version: ${{ steps.parse.outputs.project_version }}
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.x'
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@v1
       - name: Parse project.toml
         id: parse
         run: |
-          python scripts/parse_project_toml.py
+          cargo run --quiet --bin cosmos -- project gha-outputs
 
   pre-commit:
     needs: prepare
