@@ -13,9 +13,9 @@ task_file = "archive/0001-init-plan.md"
 id = "0002"
 kind = "feature"
 title = "Add plan usage docs to README and AGENT_INSTRUCTIONS"
-status = "pending_review"
+status = "finished"
 assignee = "alice"
-task_file = "tasks/0002/task.md"
+task_file = "archive/0002/task.md"
 
 [[task]]
 id = "0003"
